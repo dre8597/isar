@@ -56,30 +56,14 @@ Future<Isar> openIsar({
   final instance = await openIsarJs(name, schemasJs, relaxedDurability).wait<IsarInstanceJs>();
   final isar = IsarImpl(name, instance);
   final cols = <Type, IsarCollection<dynamic>>{};
-  final colPtrPtr = malloc<Pointer<CIsarCollection>>();
 
   for (final schema in schemas) {
     //TODO: Add in isarImpl here to allow this ncall to work
     // nCall(IC.isar_instance_get_collection(isar.instance, colPtrPtr, schema.id));
 
-    final offsets = _getOffsets(colPtrPtr.value, schema.properties.length, 0);
-
-    for (final embeddedSchema in schema.embeddedSchemas.values) {
-      final embeddedType = embeddedSchema.type;
-      if (!isar.offsets.containsKey(embeddedType)) {
-        final offsets = _getOffsets(
-          colPtrPtr.value,
-          embeddedSchema.properties.length,
-          embeddedSchema.id,
-        );
-        isar.offsets[embeddedType] = offsets;
-      }
-    }
-
     final col = instance.getCollection(schema.name);
 
     schema.toCollection(<OBJ>() {
-      isar.offsets[OBJ] = offsets;
       schema as CollectionSchema<OBJ>;
       cols[OBJ] = IsarCollectionImpl<OBJ>(
         isar: isar,
@@ -88,25 +72,10 @@ Future<Isar> openIsar({
       );
     });
   }
-  malloc.free(colPtrPtr);
 
   isar.attachCollections(cols);
   return isar;
 }
-
-List<int> _getOffsets(
-  Pointer<CIsarCollection> colPtr,
-  int propertiesCount,
-  int embeddedColId,
-) {
-  final offsetsPtr = malloc<Uint32>(propertiesCount);
-  final staticSize = IC.isar_get_offsets(colPtr, embeddedColId, offsetsPtr);
-  final offsets = offsetsPtr.asTypedList(propertiesCount).toList();
-  offsets.add(staticSize);
-  malloc.free(offsetsPtr);
-  return offsets;
-}
-
 
 Isar openIsarSync({
   required List<CollectionSchema<dynamic>> schemas,
