@@ -60,7 +60,7 @@ Future<Isar> openIsar({
 
   for (final schema in schemas) {
     //TODO: Add in isarImpl here to allow this ncall to work
-    // nCall(IC.isar_instance_get_collection(isar.ptr, colPtrPtr, schema.id));
+    // nCall(IC.isar_instance_get_collection(isar.instance, colPtrPtr, schema.id));
 
     final offsets = _getOffsets(colPtrPtr.value, schema.properties.length, 0);
 
@@ -77,7 +77,9 @@ Future<Isar> openIsar({
     }
 
     final col = instance.getCollection(schema.name);
+
     schema.toCollection(<OBJ>() {
+      isar.offsets[OBJ] = offsets;
       schema as CollectionSchema<OBJ>;
       cols[OBJ] = IsarCollectionImpl<OBJ>(
         isar: isar,
@@ -86,6 +88,7 @@ Future<Isar> openIsar({
       );
     });
   }
+  malloc.free(colPtrPtr);
 
   isar.attachCollections(cols);
   return isar;
