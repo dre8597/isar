@@ -1,14 +1,10 @@
 // ignore_for_file: public_member_api_docs, invalid_use_of_protected_member
 
-import 'dart:ffi';
 import 'dart:html';
 import 'dart:js_util';
 
-import 'package:ffi/ffi.dart';
 import 'package:isar/isar.dart';
 import 'package:isar/src/common/schemas.dart';
-import 'package:isar/src/native/bindings.dart';
-import 'package:isar/src/native/isar_core.dart';
 
 import 'package:isar/src/web/bindings.dart';
 import 'package:isar/src/web/isar_collection_impl.dart';
